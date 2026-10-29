@@ -1,0 +1,263 @@
+{
+  "name": "Simuador RH",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vWkzgG5qBbKmYAoBe7C1OY-_kE9MWq-vopDp5gwfXuU",
+          "mode": "list",
+          "cachedResultName": "Processo Seletivo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vWkzgG5qBbKmYAoBe7C1OY-_kE9MWq-vopDp5gwfXuU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Área do candidato ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vWkzgG5qBbKmYAoBe7C1OY-_kE9MWq-vopDp5gwfXuU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        -160
+      ],
+      "id": "2e4e7327-71f7-4c95-8ae9-4eb7d89639f5",
+      "name": "Obtém Candidatos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yVknWJXPJdUepgXC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9738f10b-a412-459e-9590-4e64a3d9123b",
+              "leftValue": "={{ $json['Anos de experiência '] }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "ab71e9e5-d427-4f6b-a401-0d56e0808bf2",
+              "leftValue": "={{ $json['Grau de escolaridade '] }}",
+              "rightValue": "Superior",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -160
+      ],
+      "id": "5e41eff6-b49e-4588-b89f-1104a43e07de",
+      "name": "Candidato aprovado?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        -256
+      ],
+      "id": "dd9d5faf-2b5b-40df-86b3-8d377e364771",
+      "name": "Para cada candidato"
+    },
+    {
+      "parameters": {
+        "fromEmail": "=RH<martinsjhonathan196@gmail.com>",
+        "toEmail": "={{ $json.Email }}",
+        "subject": "você foi aprovado.",
+        "emailFormat": "text",
+        "text": "=Olá  {{ $json['Nome do candidato'] }},tudo bem?\nPassando para informar que você foi aprovado para a próxima fase do processo setivo.\n\nparabéns!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        -256
+      ],
+      "id": "c22d1935-596e-457a-9e02-b6965b6b0206",
+      "name": "Enviar email de aprovação",
+      "webhookId": "5506c230-48e4-4d34-8ed0-901d6ba14e29",
+      "credentials": {
+        "smtp": {
+          "id": "Si46n1ffiBElBwpt",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Nome do candidato"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "14107a16-dbaa-40f8-bf1d-b337cdf730c9",
+      "name": "Gera array de nomes"
+    },
+    {
+      "parameters": {
+        "fromEmail": "RH<martinsjhonathan196@gmail.com",
+        "toEmail": "j.m1994@outlook.com",
+        "subject": "Candidatos reprovados",
+        "emailFormat": "text",
+        "text": "=olá coloborador JM!\nsegue a reação dos candidatos reprovados no processo seletivo:\n{{ $json['Nome do candidato'].join('\\n')}}\n\natenciosamente,equipe JM.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        -64
+      ],
+      "id": "2d5f0565-cd33-493f-874c-754e6aa758de",
+      "name": "Envia lista de candidatos reprovados",
+      "webhookId": "422ade83-0b6a-49c6-b22a-6f80da718f4d",
+      "credentials": {
+        "smtp": {
+          "id": "Si46n1ffiBElBwpt",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtDayOfMonth": 29,
+              "triggerAtHour": 17
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -704,
+        -160
+      ],
+      "id": "7419809e-3109-4c35-a356-33cf549900aa",
+      "name": "dispara no dia 29/10/2026 as 17:00 pm"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Obtém Candidatos": {
+      "main": [
+        [
+          {
+            "node": "Candidato aprovado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidato aprovado?": {
+      "main": [
+        [
+          {
+            "node": "Para cada candidato",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gera array de nomes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para cada candidato": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Enviar email de aprovação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera array de nomes": {
+      "main": [
+        [
+          {
+            "node": "Envia lista de candidatos reprovados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dispara no dia 29/10/2026 as 17:00 pm": {
+      "main": [
+        [
+          {
+            "node": "Obtém Candidatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9248df69-3804-437a-abe2-b09d51c5a78a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52b28c2f4cf5c2d38e2498251ff7ab62f3b41c2add5bcba19d8abdae84319243"
+  },
+  "nodeGroups": [],
+  "id": "MqnJRc95tf3RAKbD",
+  "tags": []
+}
